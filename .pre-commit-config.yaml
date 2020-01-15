@@ -1,0 +1,7 @@
+exclude: ^(test/mocked_repo/)
+repos:
+  - repo: https://github.com/PyCQA/pylint
+    rev:  d0a597b
+    hooks:
+      - id: pylint
+        language_version: python3.6

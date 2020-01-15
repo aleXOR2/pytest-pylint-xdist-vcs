@@ -1,0 +1,75 @@
+image: python:3.6
+variables:
+    http_proxy: "http://10.158.100.1:8080"
+    https_proxy: "http://10.158.100.1:8080"
+    ftp_proxy: "http://10.158.100.1:8080"
+    all_proxy: "http://10.158.100.1:8080"
+    GIT_STRATEGY: fetch
+stages:
+    - test
+    - quality
+    - release
+    - deploy
+.before_script:
+    before_script: &before_script_definition
+        - pip install --upgrade "tox~=3.2.1"
+.test: &test
+    stage: test
+    before_script: *before_script_definition
+    script:
+        - tox -e $CI_JOB_NAME
+
+py35:
+    <<: *test
+    image: python:3.5
+
+py37:
+    <<: *test
+    image: python:3.7
+
+py36-lint:
+    <<: *test
+
+py36-cov:
+    <<: *test
+    coverage: /^TOTAL\s+\d+\s+\d+\s+(\d+\%)$/
+    artifacts:
+        expire_in: 31 days
+        paths:
+            - htmlcov/
+            - coverage.xml
+
+pages:
+  stage: quality
+  #  only:
+  #    - master
+  before_script: *before_script_definition
+  script:
+    - tox -e py36-doc
+    - mv -v site/* public/
+  artifacts:
+    paths:
+      - public
+
+dist:
+    stage: release
+    only:
+        - tags
+        - triggers
+    script:
+        - python setup.py sdist
+    artifacts:
+        name: pytest-pylint-xdist-scm
+        paths:
+            - dist/*.tar.gz
+
+deploy:
+    stage: deploy
+    only:
+        - /^[vV]?(\d+\.)?(\d+\.)?(\d+)(\+.+)?$/
+    script:
+        - pip install -U devpi-client
+        - devpi use https://pypi.dynamic.nsn-net.net/pytest/dev/
+        - devpi login pytest --password ${PYPI_PASSWORD}
+        - devpi upload
+        - devpi logoff
