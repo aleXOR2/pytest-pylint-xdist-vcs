@@ -1,0 +1,9 @@
+[run]
+source = .
+omit =
+    .tox/*
+    setup.py
+    _version.py
+
+[html]
+directory = htmlcov

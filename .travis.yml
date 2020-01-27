@@ -1,0 +1,29 @@
+language: python
+os: linux
+dist: xenial
+cache: pip
+before_script:
+- pip3 install --upgrade tox setuptools pre-commit coveralls
+
+# test script
+script: tox
+notifications:
+  on_success: change
+  on_failure: always
+
+jobs:
+  include:
+    - python: 3.5
+      env: TOXENV=py35-test
+    - python: 3.7
+      env: TOXENV=py37-test
+    - python: 3.8
+      env: TOXENV=py38-test
+    - python: 3.6
+      env: TOXENV=py36-cov
+      after_success:
+      - coveralls
+    - python: 3.6
+      env: TOXENV=py36-doc
+    - python: 3.6
+      script: git diff-tree --no-commit-id --name-only -r ${TRAVIS_COMMIT} | xargs pre-commit run --files

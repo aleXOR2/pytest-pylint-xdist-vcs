@@ -1,0 +1,9 @@
+site_name: pytest-pylint-xdist
+site_description: pytest plugin for distributed static code analysis with pylint and VCS systems
+
+theme: readthedocs
+
+repo_url: https://github.com/aleXOR2/pytest-pylint-xdist-vcs
+
+nav:
+- Home: index.md
